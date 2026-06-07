@@ -1,8 +1,8 @@
 package com.abhinav.signature_app.controller;
 import com.abhinav.signature_app.model.User;
 import com.abhinav.signature_app.service.UserService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
 
 @RestController
 @RequestMapping("/users")
@@ -18,11 +18,17 @@ public class UserController {
     public User registerUser(@RequestBody User user) {
         return userService.saveUser(user);
     }
-    @GetMapping("/users")
-    public List<User> getAllUsers(
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) String email
-    ) {
-        return userService.getAllUsers(name, email);
+    @GetMapping("/users/{id}")
+    public ResponseEntity<User> getUserById(@PathVariable Long id) {
+        return userService.getUserById(id);
+    }
+    @PutMapping("/users/{id}")
+    public User updateUser(@PathVariable Long id, @RequestBody User updatedUser) {
+        return userService.updateUser(id, updatedUser);
+    }
+    @DeleteMapping("/users/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+        userService.deleteUser(id);
+        return ResponseEntity.noContent().build();
     }
 }

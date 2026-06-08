@@ -16,7 +16,7 @@ public class UserController {
 
     @PostMapping("/register")
     public User registerUser(@RequestBody User user) {
-        return userService.saveUser(user);
+        return userService.registerUser(user);
     }
     @GetMapping("/users/{id}")
     public ResponseEntity<User> getUserById(@PathVariable Long id) {

@@ -1,7 +1,9 @@
 package com.abhinav.signature_app.service;
+
 import com.abhinav.signature_app.repository.UserRepository;
 import com.abhinav.signature_app.model.User;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -10,17 +12,26 @@ import java.util.List;
 public class UserService {
 
     private final UserRepository userRepository;
-    public UserService(UserRepository userRepository) {
+    private final PasswordEncoder passwordEncoder;
+
+    public UserService(UserRepository userRepository,
+                       PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
+
     public User saveUser(User user) {
         return userRepository.save(user);
     }
+
     public List<User> getAllUsers(String name, String email) {
         List<User> users = userRepository.findAll();
+
         return users.stream()
-                .filter(user->name==null || user.getName().equalsIgnoreCase(name))
-                .filter(user->email==null || user.getEmail().equalsIgnoreCase(email))
+                .filter(user -> name == null ||
+                        user.getName().equalsIgnoreCase(name))
+                .filter(user -> email == null ||
+                        user.getEmail().equalsIgnoreCase(email))
                 .toList();
     }
 
@@ -35,6 +46,7 @@ public class UserService {
 
         User existingUser = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
+
         existingUser.setName(updatedUser.getName());
         existingUser.setEmail(updatedUser.getEmail());
         existingUser.setPassword(updatedUser.getPassword());
@@ -44,5 +56,15 @@ public class UserService {
 
     public void deleteUser(Long id) {
         userRepository.deleteById(id);
+    }
+
+    public User registerUser(User user) {
+
+        String hashedPassword =
+                passwordEncoder.encode(user.getPassword());
+
+        user.setPassword(hashedPassword);
+
+        return userRepository.save(user);
     }
 }

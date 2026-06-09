@@ -1,4 +1,5 @@
 package com.abhinav.signature_app.controller;
+import com.abhinav.signature_app.dto.LoginRequest;
 import com.abhinav.signature_app.model.User;
 import com.abhinav.signature_app.service.UserService;
 import org.springframework.http.ResponseEntity;
@@ -30,5 +31,11 @@ public class UserController {
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
+    }
+    @PostMapping("/login")
+    public ResponseEntity<String> login(
+            @RequestBody LoginRequest loginRequest) {
+
+        return userService.login(loginRequest);
     }
 }

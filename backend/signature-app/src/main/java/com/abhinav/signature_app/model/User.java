@@ -1,15 +1,27 @@
 package com.abhinav.signature_app.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import jakarta.persistence.Column;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "users")
 public class User {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String name;
+
+    @Column(unique = true)
+    private String email;
+
+    private String password;
+
+    @Enumerated(EnumType.STRING)
+    private Role role;
+
+    // getters and setters
+
     public Long getId() {
         return id;
     }
@@ -42,12 +54,11 @@ public class User {
         this.password = password;
     }
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    public Role getRole() {
+        return role;
+    }
 
-    private String name;
-    @Column(unique = true)
-    private String email;
-    private String password;
+    public void setRole(Role role) {
+        this.role = role;
+    }
 }

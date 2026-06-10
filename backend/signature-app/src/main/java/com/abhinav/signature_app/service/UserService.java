@@ -6,6 +6,7 @@ import com.abhinav.signature_app.model.User;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import com.abhinav.signature_app.model.Role;
 
 import java.util.List;
 import java.util.Optional;
@@ -64,26 +65,23 @@ public class UserService {
 
     public User registerUser(User user) {
 
-        String hashedPassword =
-                passwordEncoder.encode(user.getPassword());
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
 
-        user.setPassword(hashedPassword);
+        user.setRole(Role.USER); // default role
 
         return userRepository.save(user);
     }
-    public ResponseEntity<String> login(
-            LoginRequest loginRequest) {
+    public ResponseEntity<String> login(LoginRequest loginRequest) {
 
         Optional<User> userOptional =
-                userRepository.findByEmail(
-                        loginRequest.getEmail()
-                );
+                userRepository.findByEmail(loginRequest.getEmail());
+
         if (userOptional.isEmpty()) {
-            return ResponseEntity
-                    .status(404)
-                    .body("Invalid Email");
+            return ResponseEntity.status(404).body("Invalid Email");
         }
+
         User user = userOptional.get();
+
         boolean isValid =
                 passwordEncoder.matches(
                         loginRequest.getPassword(),
@@ -91,14 +89,13 @@ public class UserService {
                 );
 
         if (!isValid) {
-            return ResponseEntity
-                    .status(401)
-                    .body("Invalid Password");
+            return ResponseEntity.status(401).body("Invalid Password");
         }
 
         String token =
                 jwtService.generateToken(
-                        user.getEmail()
+                        user.getEmail(),
+                        user.getRole().name()
                 );
 
         return ResponseEntity.ok(token);

@@ -38,4 +38,8 @@ public class UserController {
 
         return userService.login(loginRequest);
     }
+    @GetMapping("/test")
+    public String test() {
+        return "WORKING";
+    }
 }

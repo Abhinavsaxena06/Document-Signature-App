@@ -2,7 +2,10 @@ package com.abhinav.signature_app.model;
 
 import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
+
 @Entity
+@Table(name = "documents")
 public class Document {
 
     @Id
@@ -15,17 +18,19 @@ public class Document {
 
     private String fileType;
 
-    @ManyToOne
-    private User owner;
+    private String signedFilePath;
 
-    // getters and setters
+    @Enumerated(EnumType.STRING)
+    private DocumentStatus status;
+
+    private LocalDateTime createdAt;
+
+    @ManyToOne
+    @JoinColumn(name = "owner_id")
+    private User owner;
 
     public Long getId() {
         return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public String getFileName() {
@@ -50,6 +55,30 @@ public class Document {
 
     public void setFileType(String fileType) {
         this.fileType = fileType;
+    }
+
+    public String getSignedFilePath() {
+        return signedFilePath;
+    }
+
+    public void setSignedFilePath(String signedFilePath) {
+        this.signedFilePath = signedFilePath;
+    }
+
+    public DocumentStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(DocumentStatus status) {
+        this.status = status;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 
     public User getOwner() {

@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import com.abhinav.signature_app.dto.SignDocumentRequest;
 
 import java.io.IOException;
 
@@ -44,6 +45,40 @@ public class DocumentController {
                 documentService.uploadFile(
                         file,
                         email
+                );
+
+        return ResponseEntity.ok(document);
+    }
+    @GetMapping("/my-documents")
+    public ResponseEntity<?> getMyDocuments(
+            HttpServletRequest request
+    ) {
+
+        String authHeader =
+                request.getHeader("Authorization");
+
+        String token =
+                authHeader.substring(7);
+
+        String email =
+                jwtService.extractEmail(token);
+
+        return ResponseEntity.ok(
+                documentService.getMyDocuments(email)
+        );
+    }
+    @PostMapping("/sign")
+    public ResponseEntity<Document> signDocument(
+            @RequestBody SignDocumentRequest request
+    ) throws IOException {
+
+        Document document =
+                documentService.signDocument(
+                        request.getDocumentId(),
+                        request.getSignatureId(),
+                        request.getPageNumber(),
+                        request.getX(),
+                        request.getY()
                 );
 
         return ResponseEntity.ok(document);

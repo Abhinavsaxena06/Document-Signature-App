@@ -111,4 +111,13 @@ public class SignatureService {
 
         signatureRepository.delete(signature);
     }
+    public void deleteSignature(Long id) {
+
+        Signature signature =
+                signatureRepository.findById(id)
+                        .orElseThrow(() ->
+                                new RuntimeException("Signature not found"));
+
+        signatureRepository.delete(signature);
+    }
 }

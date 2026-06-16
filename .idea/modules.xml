@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/Document signature app.iml" filepath="$PROJECT_DIR$/.idea/Document signature app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../Frotntend/Frotntend.iml" filepath="$PROJECT_DIR$/../Frotntend/Frotntend.iml" />
     </modules>
   </component>
 </project>

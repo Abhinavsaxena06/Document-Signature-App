@@ -8,6 +8,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import com.abhinav.signature_app.dto.SignDocumentRequest;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.web.bind.annotation.*;
+
+import java.io.File;
 
 import java.io.IOException;
 
@@ -69,8 +74,18 @@ public class DocumentController {
     }
     @PostMapping("/sign")
     public ResponseEntity<Document> signDocument(
-            @RequestBody SignDocumentRequest request
+            @RequestBody SignDocumentRequest request,
+            HttpServletRequest httpRequest
     ) throws IOException {
+
+        String authHeader =
+                httpRequest.getHeader("Authorization");
+
+        String token =
+                authHeader.substring(7);
+
+        String email =
+                jwtService.extractEmail(token);
 
         Document document =
                 documentService.signDocument(
@@ -78,9 +93,44 @@ public class DocumentController {
                         request.getSignatureId(),
                         request.getPageNumber(),
                         request.getX(),
-                        request.getY()
+                        request.getY(),
+                        email
                 );
 
         return ResponseEntity.ok(document);
+    }
+    @GetMapping("/download/{id}")
+    public ResponseEntity<Resource> downloadDocument(
+            @PathVariable Long id
+    ) throws Exception {
+
+        Document document =
+                documentService.getDocumentById(id);
+
+        File file =
+                new File(document.getFilePath());
+
+        Resource resource =
+                new UrlResource(file.toURI());
+
+        return ResponseEntity.ok()
+                .header(
+                        "Content-Disposition",
+                        "attachment; filename=\""
+                                + file.getName()
+                                + "\""
+                )
+                .body(resource);
+    }
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteDocument(
+            @PathVariable Long id
+    ) {
+
+        documentService.deleteDocument(id);
+
+        return ResponseEntity.ok(
+                "Document deleted"
+        );
     }
 }

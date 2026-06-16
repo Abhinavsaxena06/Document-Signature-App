@@ -30,7 +30,7 @@ public class PdfSigningService {
                 );
 
         PDPage page =
-                pdf.getPage(pageNumber);
+                pdf.getPage(pageNumber -1);
 
         PDImageXObject image =
                 PDImageXObject.createFromFile(

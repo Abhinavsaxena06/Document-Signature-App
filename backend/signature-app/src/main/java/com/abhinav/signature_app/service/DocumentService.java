@@ -112,7 +112,8 @@ public class DocumentService {
             Long signatureId,
             int pageNumber,
             float x,
-            float y
+            float y,
+            String email
     ) throws IOException {
 
         Document document =
@@ -124,6 +125,18 @@ public class DocumentService {
                 signatureRepository.findById(signatureId)
                         .orElseThrow(() ->
                                 new RuntimeException("Signature not found"));
+
+        if (!document.getOwner().getEmail().equals(email)) {
+            throw new RuntimeException(
+                    "You do not own this document"
+            );
+        }
+
+        if (!signature.getUser().getEmail().equals(email)) {
+            throw new RuntimeException(
+                    "You do not own this signature"
+            );
+        }
 
         String signedPdfPath =
                 pdfSigningService.signPdf(
@@ -145,5 +158,20 @@ public class DocumentService {
         return documentRepository.save(
                 document
         );
+    }
+    public Document getDocumentById(Long id) {
+
+        return documentRepository.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException("Document not found"));
+    }
+    public void deleteDocument(Long id) {
+
+        Document document =
+                documentRepository.findById(id)
+                        .orElseThrow(() ->
+                                new RuntimeException("Document not found"));
+
+        documentRepository.delete(document);
     }
 }

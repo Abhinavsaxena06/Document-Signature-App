@@ -1,42 +1,22 @@
 import { Rnd } from "react-rnd";
 
-function SignatureDraggable({
-    signature,
-    setSignatures,
-    scale = 1 // 🔥 IMPORTANT for PDF zoom mismatch (default 1)
-}) {
-    if (!signature) return null;
+function SignatureDraggable({ signature, setSignatures, onClick, onDelete }) {
 
     return (
         <Rnd
             bounds="parent"
-            enableUserSelectHack={false}
-
-            size={{
-                width: signature.width || 180,
-                height: signature.height || 60
-            }}
-
-            position={{
-                x: signature.x || 100,
-                y: signature.y || 100
-            }}
+            size={{ width: signature.width, height: signature.height }}
+            position={{ x: signature.x, y: signature.y }}
 
             onDragStop={(e, d) => {
                 setSignatures(prev =>
                     prev.map(s =>
-                        s.id === signature.id
-                            ? {
-                                ...s,
-                                x: d.x,
-                                y: d.y
-                            }
-                            : s
+                        s.id === signature.id ? { ...s, x: d.x, y: d.y } : s
                     )
                 );
             }}
 
-            onResizeStop={(e, direction, ref, delta, position) => {
+            onResizeStop={(e, dir, ref, delta, pos) => {
                 setSignatures(prev =>
                     prev.map(s =>
                         s.id === signature.id
@@ -44,57 +24,59 @@ function SignatureDraggable({
                                 ...s,
                                 width: ref.offsetWidth,
                                 height: ref.offsetHeight,
-                                x: position.x,
-                                y: position.y
+                                x: pos.x,
+                                y: pos.y
                             }
                             : s
                     )
                 );
             }}
-
-            dragGrid={[1, 1]}
-            resizeGrid={[1, 1]}
         >
             <div
-                className="drag-handle"
+                onClick={onClick}
                 style={{
                     width: "100%",
                     height: "100%",
+                    position: "relative",
                     border: "2px dashed red",
-                    background: "rgba(255,255,255,0.95)",
-                    cursor: "move",
+                    background: "white",
                     display: "flex",
-                    alignItems: "center",
                     justifyContent: "center",
-                    overflow: "hidden"
+                    alignItems: "center"
                 }}
             >
-                {/* SIGNATURE TEXT */}
-                {signature.type === "typed" ? (
-                    <span
-                        style={{
-                            fontFamily: signature.font || "cursive",
-                            color: signature.color || "#000",
-                            fontSize: `${32 * scale}px`, // 🔥 scale-safe rendering
-                            pointerEvents: "none",
-                            whiteSpace: "nowrap"
-                        }}
-                    >
+
+                {/* DELETE BUTTON */}
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onDelete();
+                    }}
+                    style={{
+                        position: "absolute",
+                        top: -8,
+                        right: -8,
+                        background: "red",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "50%",
+                        width: 18,
+                        height: 18,
+                        cursor: "pointer"
+                    }}
+                >
+                    ×
+                </button>
+
+                {/* CONTENT */}
+                {signature.image ? (
+                    <img src={signature.image} style={{ width: "100%", height: "100%" }} />
+                ) : (
+                    <span style={{ fontFamily: signature.font }}>
                         {signature.text}
                     </span>
-                ) : (
-                    /* IMAGE SIGNATURE */
-                    <img
-                        src={signature.image}
-                        alt="signature"
-                        style={{
-                            width: "100%",
-                            height: "100%",
-                            objectFit: "contain",
-                            pointerEvents: "none"
-                        }}
-                    />
                 )}
+
             </div>
         </Rnd>
     );

@@ -17,14 +17,11 @@ function Dashboard() {
     const [signatures, setSignatures] = useState([]);
     const [pageHeightPx, setPageHeightPx] = useState(0);
     const [pdfScale, setPdfScale] = useState(1);
-    console.log("SIGNATURES STATE =", signatures);
 
-    // MODALS
     const [showSignatureModal, setShowSignatureModal] = useState(false);
     const [showInitialsModal, setShowInitialsModal] = useState(false);
     const [showNameModal, setShowNameModal] = useState(false);
 
-    // ---------------- UPLOAD PDF ----------------
     const uploadPdfToServer = async (file) => {
         try {
             const formData = new FormData();
@@ -39,10 +36,8 @@ function Dashboard() {
         }
     };
 
-    // ---------------- SIGN PDF ----------------
     const savePDF = async () => {
         try {
-
             if (!documentId || signatures.length === 0) {
                 alert("Upload PDF + add signature first");
                 return;
@@ -50,29 +45,19 @@ function Dashboard() {
 
             const sig = signatures[0];
 
-            console.log("SIGNATURE =", sig);
-
             const payload = {
                 documentId: documentId,
                 signatureId: sig.signatureId,
                 pageNumber: sig.pageNumber || 1,
-
                 x: sig.x,
                 y: sig.y,
                 width: sig.width,
                 height: sig.height,
-
                 scale: pdfScale,
                 pageHeightPx: pageHeightPx
             };
 
-            console.log("PAYLOAD =", payload);
-
-            const res = await api.post(
-                "/documents/sign",
-                payload
-            );
-
+            const res = await api.post("/documents/sign", payload);
             setSignedDocumentId(res.data.id);
 
             alert("PDF Signed Successfully");
@@ -84,11 +69,14 @@ function Dashboard() {
     };
 
     return (
-        <div className="container-fluid vh-100">
+        <div
+            className="container-fluid vh-100"
+            style={{ background: "#0f172a", color: "white" }}   // DARK BACKGROUND
+        >
             <div className="row h-100">
 
-                {/* LEFT */}
-                <div className="col-md-3 p-3 border-end">
+                {/* LEFT PANEL */}
+                <div className="col-md-3 p-3 border-end" style={{ borderColor: "#1e293b" }}>
 
                     <h4>Upload PDF</h4>
 
@@ -112,13 +100,15 @@ function Dashboard() {
 
                 </div>
 
-                {/* CENTER */}
+                {/* CENTER PDF AREA (ONLY SCROLLABLE) */}
                 <div
-                    className="col-md-6 p-3 bg-light"
+                    className="col-md-6 p-3"
                     style={{
+                        background: "#111827",
                         position: "relative",
-                        minHeight: "100vh",
-                        overflow: "auto"
+                        height: "100vh",
+                        overflowY: "auto",      // 🔥 ONLY THIS SCROLLS
+                        overflowX: "hidden"
                     }}
                 >
                     {!pdfFile ? (
@@ -143,8 +133,8 @@ function Dashboard() {
                     )}
                 </div>
 
-                {/* RIGHT */}
-                <div className="col-md-3 p-3 border-start">
+                {/* RIGHT PANEL */}
+                <div className="col-md-3 p-3 border-start" style={{ borderColor: "#1e293b" }}>
 
                     <h4>Tools</h4>
 
@@ -196,9 +186,7 @@ function Dashboard() {
                                     }
                                 );
 
-                                const url = window.URL.createObjectURL(
-                                    new Blob([response.data])
-                                );
+                                const url = window.URL.createObjectURL(new Blob([response.data]));
 
                                 const a = document.createElement("a");
                                 a.href = url;
@@ -222,61 +210,58 @@ function Dashboard() {
 
             </div>
 
-            {/* MODALS */}
+            {/* MODALS (UNCHANGED) */}
             <SignatureModal
                 show={showSignatureModal}
                 onClose={() => setShowSignatureModal(false)}
-onSave={async (data) => {
-    try {
+                onSave={async (data) => {
+                    try {
 
-        let imageToSend = data.image;
+                        let imageToSend = data.image;
 
-        // 🔥 FIX: convert typed text into image
-        if (!imageToSend && data.text) {
-            const canvas = document.createElement("canvas");
-            const ctx = canvas.getContext("2d");
+                        if (!imageToSend && data.text) {
+                            const canvas = document.createElement("canvas");
+                            const ctx = canvas.getContext("2d");
 
-            canvas.width = 300;
-            canvas.height = 100;
+                            canvas.width = 300;
+                            canvas.height = 100;
 
-            ctx.font = `40px ${data.font || "cursive"}`;
-            ctx.fillStyle = data.color || "#000";
-            ctx.fillText(data.text, 10, 60);
+                            ctx.font = `40px ${data.font || "cursive"}`;
+                            ctx.fillStyle = data.color || "#000";
+                            ctx.fillText(data.text, 10, 60);
 
-            imageToSend = canvas.toDataURL("image/png");
-        }
+                            imageToSend = canvas.toDataURL("image/png");
+                        }
 
-        const res = await api.post("/signatures/create", {
-            text: data.text || null,
-            image: imageToSend,
-            type: data.type
-        });
+                        const res = await api.post("/signatures/create", {
+                            text: data.text || null,
+                            image: imageToSend,
+                            type: data.type
+                        });
 
-        setSignatures(prev => [
-            ...prev,
-            {
-                id: Date.now(),
-                signatureId: res.data.id,
-                type: data.type,
-                text: data.text || null,
-                image: imageToSend,   // 🔥 ALWAYS PRESENT NOW
-                font: data.font || null,
-                color: data.color || null,
-                x: 100,
-                y: 100,
-                width: 180,
-                height: 60,
-                pageNumber: 1
-            }
-        ]);
+                        setSignatures(prev => [
+                            ...prev,
+                            {
+                                id: Date.now(),
+                                signatureId: res.data.id,
+                                type: data.type,
+                                text: data.text || null,
+                                image: imageToSend,
+                                x: 100,
+                                y: 100,
+                                width: 180,
+                                height: 60,
+                                pageNumber: 1
+                            }
+                        ]);
 
-        setShowSignatureModal(false);
+                        setShowSignatureModal(false);
 
-        } catch (err) {
-            console.error(err);
-            alert("Failed to save signature");
-        }
-    }}
+                    } catch (err) {
+                        console.error(err);
+                        alert("Failed to save signature");
+                    }
+                }}
             />
 
             <InitialsModal
@@ -287,11 +272,9 @@ onSave={async (data) => {
                         ...prev,
                         {
                             id: Date.now(),
+                            signatureId: Date.now(),
                             type: "typed",
-                            subtype: "initials",
                             text,
-                            font: "cursive",
-                            color: "#000",
                             x: 120,
                             y: 120,
                             width: 120,
@@ -311,11 +294,9 @@ onSave={async (data) => {
                         ...prev,
                         {
                             id: Date.now(),
+                            signatureId: Date.now(),
                             type: "typed",
-                            subtype: "name",
                             text,
-                            font: "cursive",
-                            color: "#000",
                             x: 150,
                             y: 150,
                             width: 220,

@@ -1,19 +1,17 @@
 package com.abhinav.signature_app.controller;
 
+import com.abhinav.signature_app.dto.SignDocumentRequest;
 import com.abhinav.signature_app.model.Document;
 import com.abhinav.signature_app.service.DocumentService;
 import com.abhinav.signature_app.service.JwtService;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import com.abhinav.signature_app.dto.SignDocumentRequest;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
-import org.springframework.web.bind.annotation.*;
 
 import java.io.File;
-
 import java.io.IOException;
 
 @RestController
@@ -54,6 +52,7 @@ public class DocumentController {
 
         return ResponseEntity.ok(document);
     }
+
     @GetMapping("/my-documents")
     public ResponseEntity<?> getMyDocuments(
             HttpServletRequest request
@@ -72,6 +71,7 @@ public class DocumentController {
                 documentService.getMyDocuments(email)
         );
     }
+
     @PostMapping("/sign")
     public ResponseEntity<Document> signDocument(
             @RequestBody SignDocumentRequest request,
@@ -94,11 +94,14 @@ public class DocumentController {
                         request.getPageNumber(),
                         request.getX(),
                         request.getY(),
+                        request.getWidth(),
+                        request.getHeight(),
                         email
                 );
 
         return ResponseEntity.ok(document);
     }
+
     @GetMapping("/download/{id}")
     public ResponseEntity<Resource> downloadDocument(
             @PathVariable Long id
@@ -107,8 +110,13 @@ public class DocumentController {
         Document document =
                 documentService.getDocumentById(id);
 
-        File file =
-                new File(document.getFilePath());
+        String path = document.getSignedFilePath();
+
+        if (path == null || path.isEmpty()) {
+            path = document.getFilePath();
+        }
+
+        File file = new File(path);
 
         Resource resource =
                 new UrlResource(file.toURI());
@@ -116,12 +124,13 @@ public class DocumentController {
         return ResponseEntity.ok()
                 .header(
                         "Content-Disposition",
-                        "attachment; filename=\""
-                                + file.getName()
-                                + "\""
+                        "attachment; filename=\"" +
+                                file.getName() +
+                                "\""
                 )
                 .body(resource);
     }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteDocument(
             @PathVariable Long id

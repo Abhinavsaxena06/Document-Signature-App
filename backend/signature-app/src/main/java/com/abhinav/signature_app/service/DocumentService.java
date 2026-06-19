@@ -36,141 +36,103 @@ public class DocumentService {
         this.pdfSigningService = pdfSigningService;
     }
 
-    public Document uploadFile(
-            MultipartFile file,
-            String email
-    ) throws IOException {
+    // ---------------- UPLOAD ----------------
+    public Document uploadFile(MultipartFile file, String email) throws IOException {
 
-        User user = userRepository
-                .findByEmail(email)
-                .orElseThrow(() ->
-                        new RuntimeException("User not found"));
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         String uploadDir = "C:/uploads";
-
         File directory = new File(uploadDir);
 
         if (!directory.exists()) {
             directory.mkdirs();
         }
 
-        String uniqueFileName =
-                UUID.randomUUID()
-                        + "_"
-                        + file.getOriginalFilename();
+        String uniqueFileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
 
-        String filePath =
-                uploadDir
-                        + File.separator
-                        + uniqueFileName;
+        String filePath = uploadDir + File.separator + uniqueFileName;
 
-        file.transferTo(
-                new File(filePath)
-        );
+        file.transferTo(new File(filePath));
 
         Document document = new Document();
-
-        document.setFileName(
-                file.getOriginalFilename()
-        );
-
-        document.setFilePath(
-                filePath
-        );
-
-        document.setFileType(
-                file.getContentType()
-        );
-
+        document.setFileName(file.getOriginalFilename());
+        document.setFilePath(filePath);
+        document.setFileType(file.getContentType());
         document.setOwner(user);
-
-        document.setStatus(
-                DocumentStatus.DRAFT
-        );
-
-        document.setCreatedAt(
-                LocalDateTime.now()
-        );
+        document.setStatus(DocumentStatus.DRAFT);
+        document.setCreatedAt(LocalDateTime.now());
 
         return documentRepository.save(document);
     }
 
-    public List<Document> getMyDocuments(
-            String email
-    ) {
+    // ---------------- GET DOCS ----------------
+    public List<Document> getMyDocuments(String email) {
 
-        User user = userRepository
-                .findByEmail(email)
-                .orElseThrow(() ->
-                        new RuntimeException("User not found"));
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         return documentRepository.findByOwner(user);
     }
 
+    // ---------------- SIGN DOCUMENT ----------------
     public Document signDocument(
             Long documentId,
             Long signatureId,
             int pageNumber,
             float x,
             float y,
+            float width,
+            float height,
             String email
     ) throws IOException {
 
-        Document document =
-                documentRepository.findById(documentId)
-                        .orElseThrow(() ->
-                                new RuntimeException("Document not found"));
+        Document document = documentRepository.findById(documentId)
+                .orElseThrow(() -> new RuntimeException("Document not found"));
 
-        Signature signature =
-                signatureRepository.findById(signatureId)
-                        .orElseThrow(() ->
-                                new RuntimeException("Signature not found"));
+        Signature signature = signatureRepository.findById(signatureId)
+                .orElseThrow(() -> new RuntimeException("Signature not found"));
 
         if (!document.getOwner().getEmail().equals(email)) {
-            throw new RuntimeException(
-                    "You do not own this document"
-            );
+            throw new RuntimeException("You do not own this document");
         }
 
         if (!signature.getUser().getEmail().equals(email)) {
-            throw new RuntimeException(
-                    "You do not own this signature"
-            );
+            throw new RuntimeException("You do not own this signature");
         }
 
-        String signedPdfPath =
-                pdfSigningService.signPdf(
-                        document,
-                        signature,
-                        pageNumber,
-                        x,
-                        y
-                );
+        System.out.println("SIGNATURE ID = " + signature.getId());
+        System.out.println("TYPE = " + signature.getType());
+        System.out.println("TEXT = " + signature.getText());
+        System.out.println("PATH = " + signature.getSignaturePath());
 
-        document.setFilePath(
-                signedPdfPath
+        String signedPdfPath = pdfSigningService.signPdf(
+                document,
+                signature,
+                pageNumber,
+                x,
+                y,
+                width,
+                height
         );
 
-        document.setStatus(
-                DocumentStatus.COMPLETED
-        );
+        document.setSignedFilePath(signedPdfPath);
+        document.setStatus(DocumentStatus.COMPLETED);
 
-        return documentRepository.save(
-                document
-        );
+        return documentRepository.save(document);
     }
+
+    // ---------------- GET SINGLE DOC ----------------
     public Document getDocumentById(Long id) {
-
         return documentRepository.findById(id)
-                .orElseThrow(() ->
-                        new RuntimeException("Document not found"));
+                .orElseThrow(() -> new RuntimeException("Document not found"));
     }
+
+    // ---------------- DELETE ----------------
     public void deleteDocument(Long id) {
 
-        Document document =
-                documentRepository.findById(id)
-                        .orElseThrow(() ->
-                                new RuntimeException("Document not found"));
+        Document document = documentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Document not found"));
 
         documentRepository.delete(document);
     }

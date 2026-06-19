@@ -12,6 +12,10 @@ public class SignDocumentRequest {
 
     private float y;
 
+    private float width;
+
+    private float height;
+
     public Long getDocumentId() {
         return documentId;
     }
@@ -50,5 +54,21 @@ public class SignDocumentRequest {
 
     public void setY(float y) {
         this.y = y;
+    }
+
+    public float getWidth() {
+        return width;
+    }
+
+    public void setWidth(float width) {
+        this.width = width;
+    }
+
+    public float getHeight() {
+        return height;
+    }
+
+    public void setHeight(float height) {
+        this.height = height;
     }
 }

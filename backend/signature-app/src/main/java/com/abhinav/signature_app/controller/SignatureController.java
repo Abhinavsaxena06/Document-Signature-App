@@ -1,9 +1,11 @@
 package com.abhinav.signature_app.controller;
 
+import com.abhinav.signature_app.dto.SignatureRequest;
 import com.abhinav.signature_app.model.Signature;
+import com.abhinav.signature_app.service.JwtService;
 import com.abhinav.signature_app.service.SignatureService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -15,22 +17,30 @@ import java.util.List;
 public class SignatureController {
 
     private final SignatureService signatureService;
+    private final JwtService jwtService;
 
     public SignatureController(
-            SignatureService signatureService
+            SignatureService signatureService,
+            JwtService jwtService
     ) {
         this.signatureService = signatureService;
+        this.jwtService = jwtService;
     }
 
     @PostMapping("/upload")
     public ResponseEntity<Signature> upload(
-            @RequestParam("file")
-            MultipartFile file,
-            Authentication authentication
+            @RequestParam("file") MultipartFile file,
+            HttpServletRequest request
     ) throws IOException {
 
+        String authHeader =
+                request.getHeader("Authorization");
+
+        String token =
+                authHeader.substring(7);
+
         String email =
-                authentication.getName();
+                jwtService.extractEmail(token);
 
         return ResponseEntity.ok(
                 signatureService.uploadSignature(
@@ -42,11 +52,17 @@ public class SignatureController {
 
     @GetMapping("/my")
     public ResponseEntity<List<Signature>> getMySignatures(
-            Authentication authentication
+            HttpServletRequest request
     ) {
 
+        String authHeader =
+                request.getHeader("Authorization");
+
+        String token =
+                authHeader.substring(7);
+
         String email =
-                authentication.getName();
+                jwtService.extractEmail(token);
 
         return ResponseEntity.ok(
                 signatureService.getMySignatures(email)
@@ -56,11 +72,17 @@ public class SignatureController {
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteSignature(
             @PathVariable Long id,
-            Authentication authentication
+            HttpServletRequest request
     ) {
 
+        String authHeader =
+                request.getHeader("Authorization");
+
+        String token =
+                authHeader.substring(7);
+
         String email =
-                authentication.getName();
+                jwtService.extractEmail(token);
 
         signatureService.deleteSignature(
                 id,
@@ -70,5 +92,30 @@ public class SignatureController {
         return ResponseEntity.ok(
                 "Signature deleted"
         );
+    }
+    @PostMapping("/create")
+    public ResponseEntity<Signature> createSignature(
+            @RequestBody SignatureRequest request,
+            HttpServletRequest httpRequest
+    ) {
+
+        String authHeader =
+                httpRequest.getHeader("Authorization");
+
+        String token =
+                authHeader.substring(7);
+
+        String email =
+                jwtService.extractEmail(token);
+
+        Signature signature =
+                signatureService.createSignature(
+                        email,
+                        request.getText(),
+                        request.getImage(),
+                        request.getType()
+                );
+
+        return ResponseEntity.ok(signature);
     }
 }

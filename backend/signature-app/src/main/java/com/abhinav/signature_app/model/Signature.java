@@ -1,7 +1,6 @@
 package com.abhinav.signature_app.model;
 
 import jakarta.persistence.*;
-
 import java.time.LocalDateTime;
 
 @Entity
@@ -13,6 +12,11 @@ public class Signature {
     private Long id;
 
     private String signaturePath;
+
+    private String text;
+
+    @Column(length = 1000000)
+    private String imageBase64;
 
     @Enumerated(EnumType.STRING)
     private SignatureType type;
@@ -33,6 +37,22 @@ public class Signature {
 
     public void setSignaturePath(String signaturePath) {
         this.signaturePath = signaturePath;
+    }
+
+    public String getText() {
+        return text;
+    }
+
+    public void setText(String text) {
+        this.text = text;
+    }
+
+    public String getImageBase64() {
+        return imageBase64;
+    }
+
+    public void setImageBase64(String imageBase64) {
+        this.imageBase64 = imageBase64;
     }
 
     public SignatureType getType() {

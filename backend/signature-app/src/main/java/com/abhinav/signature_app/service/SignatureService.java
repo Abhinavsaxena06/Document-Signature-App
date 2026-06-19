@@ -120,4 +120,37 @@ public class SignatureService {
 
         signatureRepository.delete(signature);
     }
+    public Signature createSignature(
+            String email,
+            String text,
+            String image,
+            String type
+    ) {
+
+        User user = userRepository
+                .findByEmail(email)
+                .orElseThrow(() ->
+                        new RuntimeException("User not found"));
+
+        Signature signature = new Signature();
+
+        signature.setUser(user);
+
+        signature.setCreatedAt(LocalDateTime.now());
+
+        if ("typed".equalsIgnoreCase(type)) {
+
+            signature.setType(SignatureType.TYPED);
+
+            signature.setText(text);
+
+        } else {
+
+            signature.setType(SignatureType.DRAWN);
+
+            signature.setImageBase64(image);
+        }
+
+        return signatureRepository.save(signature);
+    }
 }

@@ -1,8 +1,4 @@
 # 🖊️ Document Signature App
-
-![GitHub stars](https://img.shields.io/github/stars/your-username/your-repo?style=for-the-badge)
-![GitHub forks](https://img.shields.io/github/forks/your-username/your-repo?style=for-the-badge)
-![License](https://img.shields.io/github/license/your-username/your-repo?style=for-the-badge)
 ![Java](https://img.shields.io/badge/Java-17-red?style=for-the-badge&logo=java)
 ![Spring Boot](https://img.shields.io/badge/SpringBoot-Backend-green?style=for-the-badge&logo=springboot)
 ![React](https://img.shields.io/badge/React-Frontend-blue?style=for-the-badge&logo=react)
